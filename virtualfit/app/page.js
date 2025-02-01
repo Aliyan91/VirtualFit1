@@ -12,8 +12,8 @@ export default function Home() {
     const file = event.target.files[0];
     
     // Check if file is an image
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+    if (!file || !file.type.startsWith('image/')) {
+      alert('Please upload a valid image file');
       return;
     }
 
@@ -23,8 +23,12 @@ export default function Home() {
       return;
     }
 
+    const imageUrl = URL.createObjectURL(file);
     setSelectedImage(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setPreviewUrl(imageUrl);
+    
+    // Store the image URL for use in try-on
+    localStorage.setItem('userImage', imageUrl);
   };
 
   const handleRemoveImage = () => {
@@ -32,8 +36,10 @@ export default function Home() {
     setPreviewUrl(null);
   };
 
-  const handleBrowseCatalog = () => {
-    router.push('/catalog');
+  const handleTryOnClick = () => {
+    if (selectedImage) {
+      router.push('/catalog');
+    }
   };
 
   return (
@@ -112,6 +118,7 @@ export default function Home() {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
                 <button 
+                  onClick={handleTryOnClick}
                   className={`${
                     selectedImage 
                       ? 'bg-blue-600 hover:bg-blue-700' 
@@ -121,13 +128,6 @@ export default function Home() {
                   disabled={!selectedImage}
                 >
                   Try On Clothes
-                </button>
-                <button 
-                  onClick={handleBrowseCatalog}
-                  className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 
-                    text-gray-800 dark:text-white font-semibold py-3 px-8 rounded-full transition duration-300"
-                >
-                  Browse Catalog
                 </button>
               </div>
             </div>

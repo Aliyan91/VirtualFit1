@@ -1,5 +1,9 @@
 'use client';
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
+import { useCart } from '../context/CartContext';
+import { useState } from 'react';
+import Toast from './Toast';
 
 // Mock data for clothes (replace with real data later)
 const clothes = [
@@ -19,29 +23,47 @@ const clothes = [
     image: "/dress2.webp",
     category: "Shalwar Kameez"
   },
-  {
-    id: 3,
-    name: "Elegant Waistcoat",
-    brand: "Formal Collection",
-    price: "3500Rs",
-    image: "/waistcoat.webp",
-    category: "Waistcoat"
-  },
   // Add more items as needed
 ];
 
 const categories = [
-  "All",
-  "Shalwar Kameez",
-  "Waistcoat",
-  "Multani Churidar",
-  "Sindhi Churidar",
-  "Accessories"
+  
+  
 ];
 
 export default function Catalog() {
+  const router = useRouter();
+  const { addToCart } = useCart();
+  const [showToast, setShowToast] = useState(false);
+
+  const handleTryOn = (item) => {
+    const userImage = localStorage.getItem('userImage');
+    if (!userImage) {
+      alert('Please upload your photo first');
+      router.push('/');
+      return;
+    }
+    
+    // Pass all item details as encoded URI component
+    const itemDetails = encodeURIComponent(JSON.stringify(item));
+    router.push(`/tryon?itemDetails=${itemDetails}&userImage=${userImage}`);
+  };
+
+  const handleAddToCart = (e, item) => {
+    e.stopPropagation();
+    addToCart(item);
+    setShowToast(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+      {/* Toast Notification */}
+      <Toast 
+        message="Added to cart successfully!" 
+        show={showToast} 
+        onClose={() => setShowToast(false)}
+      />
+
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
@@ -114,8 +136,11 @@ export default function Catalog() {
                   fill
                   className="object-cover"
                 />
-                <button className="absolute top-4 right-4 p-2 rounded-full bg-white dark:bg-gray-800 
-                  shadow-md hover:bg-blue-500 hover:text-white transition duration-300">
+                <button 
+                  className="absolute top-4 right-4 p-2 rounded-full bg-white dark:bg-gray-800 
+                    shadow-md hover:bg-blue-500 hover:text-white transition duration-300"
+                  onClick={(e) => handleAddToCart(e, item)}
+                >
                   <svg
                     className="h-5 w-5"
                     fill="none"
@@ -142,8 +167,11 @@ export default function Catalog() {
                   <span className="text-blue-600 dark:text-blue-400 font-bold">
                     {item.price}
                   </span>
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 
-                    transition duration-300">
+                  <button 
+                    onClick={() => handleTryOn(item)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 
+                      transition duration-300"
+                  >
                     Try On
                   </button>
                 </div>
